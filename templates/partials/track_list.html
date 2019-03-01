@@ -1,0 +1,20 @@
+<table class="table table-condensed tracks">
+    <thead>
+        <tr>
+            <th>Track Name</th>
+            <th>Popularity</th>
+        </tr>
+    </thead>
+    {% for track in playlist['items'] %}
+    <tr class="track">
+
+        <td>
+            <span class="track-name">{{ track.track.name }}</span>
+        </td>
+        <td>
+            <span class="number">{{ track.track.popularity }}</span>
+        </td>
+    </tr>
+    {% endfor %}
+
+</table>

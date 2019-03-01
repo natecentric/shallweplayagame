@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="mt-1">
+        <h1>Playlist</h1>
+    </div>
+
+    <hr class="half-rule" />
+
+    <div class='containter'>
+        <div>
+        Veiw Playlist Audio Features:
+        <a href="{{ url_for('playlist_audio_features', id=playlist_id)}}">
+            Click Here
+        </a>
+        </div>
+
+        <div class="col-sm-8">
+            <section class="sec tracks">
+                <h3>Tracks</h3>
+                {% include 'partials/track_list.html' %}
+            </section>
+        </div>
+
+    </div>
+
+</div>
+{% endblock %}
