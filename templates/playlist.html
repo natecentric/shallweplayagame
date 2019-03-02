@@ -4,28 +4,17 @@
 
 <div class="container">
 
-    <div class="mt-1">
-        <h1>Playlist</h1>
-    </div>
-
-    <hr class="half-rule" />
-
-    <div class='containter'>
-        <div>
-        Veiw Playlist Audio Features:
-        <a href="{{ url_for('playlist_audio_features', id=playlist_id)}}">
+    <div>
+        View Result:
+        <a href="{{ url_for('mloutput') }}">
             Click Here
-        </a>
-        </div>
-
-        <div class="col-sm-8">
-            <section class="sec tracks">
-                <h3>Tracks</h3>
-                {% include 'partials/track_list.html' %}
-            </section>
-        </div>
-
+        </a>.
     </div>
 
+    <div class="mt-1">
+        <h1>Track Info</h1>
+    </div>
+
+    {{alldata | safe}}
 </div>
 {% endblock %}

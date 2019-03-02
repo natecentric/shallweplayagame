@@ -45,6 +45,7 @@
     <Content Include="templates\featured_playlists.html" />
     <Content Include="templates\index.html" />
     <Content Include="templates\layout.html" />
+    <Content Include="templates\recommend.html" />
     <Content Include="templates\mloutput.html" />
     <Content Include="templates\partials\search_album.html" />
     <Content Include="templates\partials\search_artist.html" />
@@ -52,7 +53,6 @@
     <Content Include="templates\partials\search_track.html" />
     <Content Include="templates\partials\track_list.html" />
     <Content Include="templates\playlist.html" />
-    <Content Include="templates\playlist_audio_features.html" />
     <Content Include="templates\profile.html" />
     <Content Include="templates\search.html" />
   </ItemGroup>

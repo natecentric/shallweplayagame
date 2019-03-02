@@ -61,8 +61,6 @@ auth_query_parameters = {
     "response_type": "code",
     "redirect_uri": REDIRECT_URI,
     "scope": SCOPE,
-    # "state": STATE,
-    # "show_dialog": SHOW_DIALOG_str,
     "client_id": CLIENT_ID
 }
 
@@ -283,18 +281,22 @@ def get_several_tracks(list_of_ids):
 # ---------------- 8. AUDIO FEATURES ------------------------
 # https://developer.spotify.com/documentation/web-api/reference/tracks/get-several-audio-features/
 
-GET_AUDIO_FEATURES = "{}/{}".format(SPOTIFY_API_URL, 'audio-features')  # /<id>
+GET_AUDIO_FEATURES_ENDPOINT = "{}/{}".format(SPOTIFY_API_URL, 'audio-features')  # /<id>
 
 # https://developer.spotify.com/web-api/get-track/
 def get_audio_feature(auth_header, ids=[]):
-    url = "{}/?ids={ids}".format(GET_AUDIO_FEATURES, ids=','.join(ids))
+    url = "{}/?ids={ids}".format(GET_AUDIO_FEATURES_ENDPOINT, ids=','.join(ids))
     resp = requests.get(url, headers=auth_header)
     return resp.json()
 
 # ---------------- 8. BROWSE ------------------------
+GET_RECOMMENDATIONS_ENDPOINT = "{}/{}".format(SPOTIFY_API_URL, 'recommendations')  # /<id>
 
-
-def get_recommendations(auth_header, ids=[]):
-    url = "{}/?seed_tracks={ids}".format(GET_AUDIO_FEATURES, ids=','.join(ids))
+#https://developer.spotify.com/documentation/web-api/reference/browse/get-recommendations/
+def get_recommendations(auth_header,query_parameters):
+    #URL_ARGS = "&".join(["{}={}".format(key, urllibparse.quote(val))
+    URL_ARGS = "&".join(["{}={}".format(key, urllib.parse.quote_plus(str(val)))
+    for key, val in list(query_parameters.items())])
+    url = "{}/?{}".format(GET_RECOMMENDATIONS_ENDPOINT, URL_ARGS)
     resp = requests.get(url, headers=auth_header)
     return resp.json()

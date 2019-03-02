@@ -1,3 +1,3 @@
-id,acousticness,danceability,energy,liveness,speechiness,valence,Assignments,DistancesToClusterCenter no.0,DistancesToClusterCenter no.1,DistancesToClusterCenter no.2,DistancesToClusterCenter no.3,DistancesToClusterCenter no.4
-12GEpg2XOPyqk03JZEZnJs,0.119,0.64,0.533,0.0864,0.0706,0.515,0,0.103229448870366,0.570089624526579,0.152466511389525,0.395528560022136,0.419017489609124
-7ef4DlsgrMEH11cDZd32M6,0.037,0.791,0.862,0.0814,0.11,0.592,2,0.234846563548289,0.576474637430865,0.0841544611143133,0.297963954730472,0.539115609264127
+id,popularity,acousticness,danceability,energy,liveness,speechiness,valence,Assignments,DistancesToClusterCenter no.0,DistancesToClusterCenter no.1,DistancesToClusterCenter no.2,DistancesToClusterCenter no.3,DistancesToClusterCenter no.4
+12GEpg2XOPyqk03JZEZnJs,70,0.119,0.64,0.533,0.0864,0.0706,0.515,0,0.103229448870366,0.570089624526579,0.152466511389525,0.395528560022136,0.419017489609124
+7ef4DlsgrMEH11cDZd32M6,88,0.037,0.791,0.862,0.0814,0.11,0.592,2,0.234846563548289,0.576474637430865,0.0841544611143133,0.297963954730472,0.539115609264127

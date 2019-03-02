@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="mt-1">
+        <h1>Recommendations</h1>
+    </div>
+
+    {% for tracks in recommendrequest %}
+    <div class='row'>
+        <a href="{{tracks.external_urls.spotify }}">
+
+            <div class='col-sm-8'>
+                <span>{{ tracks.name }} </span>
+            </div>
+
+        </a>
+
+    </div>
+    {% endfor %}
+
+
+</div>
+{% endblock %}
