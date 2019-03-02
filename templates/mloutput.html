@@ -4,11 +4,21 @@
 
 <div class="container">
 
+    <div>
+        Get Recommendations Based on Below Results:
+        <a href="{{ url_for('recommend') }}">
+            Click Here
+        </a>.
+    </div>
+
     <div class="mt-1">
-        <h1>Results</h1>
+        <h1>ML Results</h1>
     </div>
 
     {{data | safe}}
+
+
+
 
 </div>
 {% endblock %}

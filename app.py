@@ -118,14 +118,6 @@ def profile():
     return render_template('profile.html')
 
 
-@app.route('/playlist/<id>')
-def playlist(id):
-     if 'auth_header' in session:
-        auth_header = session['auth_header']
-        playlist_data = spotify.get_playlist(auth_header,id)
-        playlist_id = request.view_args['id']
-     return render_template('playlist.html', playlist=playlist_data["tracks"],playlist_id=playlist_id)
-
 @app.route('/featured_playlists')
 def featured_playlists():
     if 'auth_header' in session:
@@ -142,8 +134,8 @@ def track_list():
     tracks = track_list ['tracks']
     return render_template ('track_list.html', track_list=track_list, tracks=tracks)
 
-@app.route('/playlist_audio_features')
-def playlist_audio_features():
+@app.route('/playlist')
+def playlist():
     if 'auth_header' in session:
         auth_header = session['auth_header']
         offset = 0
@@ -151,10 +143,10 @@ def playlist_audio_features():
         items = []
         ids = []
         track_info = []
-        id = request.args['id']
+        playlist_id = request.args['id']
         # get playlist
         while True:
-            content = spotify.get_playlist_tracks(auth_header, id)
+            content = spotify.get_playlist_tracks(auth_header, playlist_id)
             songs += content['items']
             if content['next'] is not None:
                 offset += 100
@@ -165,14 +157,12 @@ def playlist_audio_features():
             ids.append(i['track']['id'])
             track_info.append([
                 i['track']['id'],
-                i['track']['name'],
                 i['track']['popularity']
                 ])
 
         trackdf = pd.DataFrame(track_info, columns=
                           [
                           'id',
-                          'name',
                           'popularity'
                           ]
                            )
@@ -193,11 +183,9 @@ def playlist_audio_features():
                 features['speechiness'],features['valence']
                 ])
 
-
-
         featuredf = pd.DataFrame(features_list, columns=
                           [
-                          'id',  
+                          'id',
                           'acousticness', 'danceability',
                           'energy', 'liveness',
                           'speechiness', 'valence'
@@ -205,27 +193,39 @@ def playlist_audio_features():
                            )
         #alldf = pd.concat([trackdf, featuredf], axis=1, join='inner')
         alldf = pd.merge(trackdf, featuredf, on='id')
-        mlinputdf = pd.DataFrame(features_list, columns=
-                    [
-                    'id',  
-                    'acousticness', 'danceability',
-                    'energy', 'liveness',
-                    'speechiness', 'valence'
-                    ]
-                    )
-        mlinputdf.to_csv('mlinput.csv', sep = ',', index = False)
-        return render_template('playlist_audio_features.html',  featuredata=featuredf.to_html(), trackdata=trackdf.to_html(), alldata=alldf.to_html())
+        alldf.to_csv('mlinput.csv', sep = ',', index = False)
+        return render_template('playlist.html',  playlist_id=playlist_id, alldata=alldf.to_html())
 
 
 @app.route('/mloutput')
 def mloutput():
     mlbatchrequest = azureml.invokeBatchExecutionService()
     mloutputtable = pd.read_csv('mloutput.csv')
+    mloutputtable.loc['avg'] = mloutputtable.mean()
     return render_template("mloutput.html", data=mloutputtable.to_html())
 
+@app.route('/recommend')
+def recommend():
+    if 'auth_header' in session:
+        auth_header = session['auth_header']
+        mloutputtable = pd.read_csv('mloutput.csv')
+        mloutputtable.loc['avg'] = mloutputtable.mean()
+        seedid = mloutputtable.loc[0,'id']
+        popavg = mloutputtable.loc['avg','popularity']
+        targetpop = int(round(popavg))
+        targetdance = mloutputtable.loc['avg','danceability']
+        targetenergy = mloutputtable.loc['avg','energy']
+        query_parameters = {
+            "seed_tracks": seedid,
+            "limit": 1,
+            "market": "US",
+            "target_popularity": targetpop,
+            "target_danceability": targetdance,
+            "target_energy": targetenergy
+            }
+        recommendrequest = spotify.get_recommendations(auth_header,query_parameters)
 
-
-
+        return render_template("recommend.html",recommendrequest=recommendrequest["tracks"])
 
 if __name__ == "__main__":
     

@@ -1,3 +1,3 @@
-id,acousticness,danceability,energy,liveness,speechiness,valence
-12GEpg2XOPyqk03JZEZnJs,0.119,0.64,0.533,0.0864,0.0706,0.515
-7ef4DlsgrMEH11cDZd32M6,0.037,0.791,0.862,0.0814,0.11,0.592
+id,popularity,acousticness,danceability,energy,liveness,speechiness,valence
+12GEpg2XOPyqk03JZEZnJs,70,0.119,0.64,0.533,0.0864,0.0706,0.515
+7ef4DlsgrMEH11cDZd32M6,88,0.037,0.791,0.862,0.0814,0.11,0.592
