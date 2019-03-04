@@ -1,4 +1,10 @@
 {
   "id": "",
-  "secret": ""
+  "secret": "",
+  "scope": "playlist-modify-public playlist-modify-private user-read-recently-played user-top-read streaming user-modify-playback-state",
+  "storage_account_name": "",
+  "storage_account_key": "",
+  "storage_container_name": "",
+  "api_key": "",
+  "url": ""
 }

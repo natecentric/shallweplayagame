@@ -208,6 +208,7 @@ def mloutput():
 def recommend():
     if 'auth_header' in session:
         auth_header = session['auth_header']
+        songarray = {"uris":[]}
         mloutputtable = pd.read_csv('mloutput.csv')
         mloutputtable.loc['avg'] = mloutputtable.mean()
         seedid = mloutputtable.loc[0,'id']
@@ -217,15 +218,19 @@ def recommend():
         targetenergy = mloutputtable.loc['avg','energy']
         query_parameters = {
             "seed_tracks": seedid,
-            "limit": 1,
+            "limit": 10,
             "market": "US",
             "target_popularity": targetpop,
             "target_danceability": targetdance,
             "target_energy": targetenergy
             }
         recommendrequest = spotify.get_recommendations(auth_header,query_parameters)
+        for i in recommendrequest['tracks']:
+            id = i['id']
+            songarray['uris'].append("spotify:track:" + id)
+        return render_template("recommend.html", recommendrequest=recommendrequest["tracks"], songarray=songarray)
 
-        return render_template("recommend.html",recommendrequest=recommendrequest["tracks"])
+
 
 if __name__ == "__main__":
     

@@ -1,18 +1,18 @@
-# How this works:
-#
-# 1. Assume the input is present in a local file (if the web service accepts input)
-# 2. Upload the file to an Azure blob - you"d need an Azure storage account
-# 3. Call BES to process the data in the blob.
-# 4. The results get written to another Azure blob.
-# 5. Download the output blob to a local file
-#
-# Note: You may need to download/install the Azure SDK for Python.
-# See: http://azure.microsoft.com/en-us/documentation/articles/python-how-to-install/
-
 import urllib.request
 import json
 import time
 from azure.storage.blob import *
+
+
+
+CONFIG = json.load(open('conf.json', 'r+'))
+storage_account_name = CONFIG['storage_account_name']
+storage_account_key = CONFIG['storage_account_key']
+storage_container_name = CONFIG ['storage_container_name']
+connection_string = "DefaultEndpointsProtocol=https;AccountName=" + storage_account_name + ";AccountKey=" + storage_account_key
+api_key = CONFIG['api_key']
+url = CONFIG['url']
+
 
 def printHttpError(httpError):
     print("The request failed with status code: " + str(httpError.code))
@@ -64,13 +64,6 @@ def uploadFileToBlob(input_file, input_blob_name, storage_container_name, storag
     blob_service.create_blob_from_path(storage_container_name, input_blob_name, input_file)
 
 def invokeBatchExecutionService():
-    storage_account_name = "z" # Replace this with your Azure Storage Account name
-    storage_account_key = "y" # Replace this with your Azure Storage Key
-    storage_container_name = "x" # Replace this with your Azure Storage Container name
-    connection_string = "DefaultEndpointsProtocol=https;AccountName=" + storage_account_name + ";AccountKey=" + storage_account_key
-
-    api_key = "w" # Replace this with the API key for the web service
-    url = "https://ussouthcentral.services.azureml.net/subscriptions/76a0821cb1ea416bac58dc752dc03eaa/services/292ac9fa0a624350b38071e8421d8a8d/jobs"
 
     uploadFileToBlob("mlinput.csv", # Replace this with the location of your input file, and valid file extension (usually .csv)
         "mlinputblob.csv", # Replace this with the name you would like to use for your Azure blob; this needs to have the same extension as the input file 
