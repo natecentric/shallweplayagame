@@ -5,7 +5,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{6802f6ef-434b-4d7a-bb80-6103458d8224}</ProjectGuid>
     <ProjectHome>..\shallweplayagame\</ProjectHome>
-    <StartupFile>app.py</StartupFile>
+    <StartupFile>application.py</StartupFile>
     <SearchPath />
     <WorkingDirectory>C:\Users\nmd\source\repos\shallweplayagame</WorkingDirectory>
     <OutputPath>..\shallweplayagame\</OutputPath>
@@ -63,7 +63,7 @@
     <Compile Include="api\examples\__init__.py" />
     <Compile Include="api\spotify.py" />
     <Compile Include="api\__init__.py" />
-    <Compile Include="app.py" />
+    <Compile Include="application.py" />
     <Compile Include="azureml_requests\azureml.py" />
     <Compile Include="azureml_requests\__init__.py" />
     <Compile Include="bin\wfastcgi.py" />
