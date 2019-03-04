@@ -157,12 +157,14 @@ def playlist():
             ids.append(i['track']['id'])
             track_info.append([
                 i['track']['id'],
+                i['track']['name'],
                 i['track']['popularity']
                 ])
 
         trackdf = pd.DataFrame(track_info, columns=
                           [
                           'id',
+                          'name',
                           'popularity'
                           ]
                            )
@@ -200,7 +202,7 @@ def playlist():
 @app.route('/mloutput')
 def mloutput():
     mlbatchrequest = azureml.invokeBatchExecutionService()
-    mloutputtable = pd.read_csv('mloutput.csv')
+    mloutputtable = pd.read_csv('mloutput.csv', encoding = "ISO-8859-1")
     mloutputtable.loc['avg'] = mloutputtable.mean()
     return render_template("mloutput.html", data=mloutputtable.to_html())
 
@@ -209,7 +211,7 @@ def recommend():
     if 'auth_header' in session:
         auth_header = session['auth_header']
         songarray = {"uris":[]}
-        mloutputtable = pd.read_csv('mloutput.csv')
+        mloutputtable = pd.read_csv('mloutput.csv', encoding = "ISO-8859-1")
         mloutputtable.loc['avg'] = mloutputtable.mean()
         seedid = mloutputtable.loc[0,'id']
         popavg = mloutputtable.loc['avg','popularity']
