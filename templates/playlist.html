@@ -6,16 +6,16 @@
 
     <div>
         View Result:
-        <a href="{{ url_for('mloutput') }}">
+        <a href="{{ url_for('playlistresult') }}">
             Click Here
         </a>.
     </div>
 
     <div class="mt-1">
-        
+
         <span><h1><img src="{{url_for('static', filename='imgs/musicIcon.png')}}" alt="Track Info" id="musicCD"> Track Info</h1></span>
     </div>
 
-    {{alldata | safe}}
+    {{playlistinput | safe}}
 </div>
 {% endblock %}

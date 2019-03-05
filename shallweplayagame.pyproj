@@ -29,10 +29,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="conf.json" />
-    <Content Include="mlinput.csv" />
-    <Content Include="mloutput.csv" />
     <Content Include="obj\Debug\spotify-flask.pyproj.FileListAbsolute.txt" />
+    <Content Include="playlistinput.csv" />
+    <Content Include="playlistoutput.csv" />
     <Content Include="README.md" />
+    <Content Include="recommendinput.csv" />
+    <Content Include="recommendoutput.csv" />
     <Content Include="requirements.txt" />
     <Content Include="static\css\bootstrap.min.css" />
     <Content Include="static\css\mystyles.css" />
@@ -45,8 +47,9 @@
     <Content Include="templates\featured_playlists.html" />
     <Content Include="templates\index.html" />
     <Content Include="templates\layout.html" />
+    <Content Include="templates\stagedplaylist.html" />
     <Content Include="templates\recommend.html" />
-    <Content Include="templates\mloutput.html" />
+    <Content Include="templates\playlistresult.html" />
     <Content Include="templates\partials\search_album.html" />
     <Content Include="templates\partials\search_artist.html" />
     <Content Include="templates\partials\search_play.html" />
@@ -64,7 +67,8 @@
     <Compile Include="api\spotify.py" />
     <Compile Include="api\__init__.py" />
     <Compile Include="application.py" />
-    <Compile Include="azureml_requests\azureml.py" />
+    <Compile Include="azureml_requests\recommendazureml.py" />
+    <Compile Include="azureml_requests\playlistazureml.py" />
     <Compile Include="azureml_requests\__init__.py" />
     <Compile Include="bin\wfastcgi.py" />
     <Compile Include="spotify_requests\spotify.py" />

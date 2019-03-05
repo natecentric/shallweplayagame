@@ -3,8 +3,6 @@ import json
 import time
 from azure.storage.blob import *
 
-
-
 CONFIG = json.load(open('conf.json', 'r+'))
 storage_account_name = CONFIG['storage_account_name']
 storage_account_key = CONFIG['storage_account_key']
@@ -12,7 +10,6 @@ storage_container_name = CONFIG ['storage_container_name']
 connection_string = "DefaultEndpointsProtocol=https;AccountName=" + storage_account_name + ";AccountKey=" + storage_account_key
 api_key = CONFIG['api_key']
 url = CONFIG['url']
-
 
 def printHttpError(httpError):
     print("The request failed with status code: " + str(httpError.code))
@@ -24,7 +21,7 @@ def printHttpError(httpError):
     return
 
 def saveBlobToFile(blobUrl, resultsLabel):
-    output_file = "mloutput.csv" # Replace this with the location you would like to use for your output file, and valid file extension (usually .csv for scoring results, or .ilearner for trained models)
+    output_file = "recommendoutput.csv" # Replace this with the location you would like to use for your output file, and valid file extension (usually .csv for scoring results, or .ilearner for trained models)
     print("Reading the result from " + blobUrl)
     try:
         response = urllib.request.urlopen(blobUrl)
@@ -65,8 +62,8 @@ def uploadFileToBlob(input_file, input_blob_name, storage_container_name, storag
 
 def invokeBatchExecutionService():
 
-    uploadFileToBlob("mlinput.csv", # Replace this with the location of your input file, and valid file extension (usually .csv)
-        "mlinputblob.csv", # Replace this with the name you would like to use for your Azure blob; this needs to have the same extension as the input file 
+    uploadFileToBlob("recommendinput.csv", # Replace this with the location of your input file, and valid file extension (usually .csv)
+        "recommendinputblob.csv", # Replace this with the name you would like to use for your Azure blob; this needs to have the same extension as the input file 
         storage_container_name, storage_account_name, storage_account_key);
 
     payload = {
@@ -74,7 +71,7 @@ def invokeBatchExecutionService():
                     "input1": 
                     {
                         "ConnectionString": connection_string,
-                        "RelativeLocation": "/" + storage_container_name + "/mlinputblob.csv"
+                        "RelativeLocation": "/" + storage_container_name + "/recommendinputblob.csv"
                     },
             },
 
@@ -82,7 +79,7 @@ def invokeBatchExecutionService():
                     "output1":
                     {
                         "ConnectionString": connection_string,
-                        "RelativeLocation": "/" + storage_container_name + "/mloutputblob.csv" # Replace this with the location you would like to use for your output file, and valid file extension (usually .csv for scoring results, or .ilearner for trained models)
+                        "RelativeLocation": "/" + storage_container_name + "/recommendoutputblob.csv" # Replace this with the location you would like to use for your output file, and valid file extension (usually .csv for scoring results, or .ilearner for trained models)
                     },
             },
 

@@ -1,110 +1,22 @@
 {% extends "layout.html" %}
+
 {% block content %}
-<head>
 
-    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="https://sdk.scdn.co/spotify-player.js"></script>
-    <script>
-        // Get the hash of the url
-        const hash = window.location.hash
-            .substring(1)
-            .split('&')
-            .reduce(function (initial, item) {
-                if (item) {
-                    var parts = item.split('=');
-                    initial[parts[0]] = decodeURIComponent(parts[1]);
-                }
-                return initial;
-            }, {});
-        window.location.hash = '';
-
-        // Set token
-        let _token = hash.access_token;
-
-        const authEndpoint = 'https://accounts.spotify.com/authorize';
-
-        // Replace with your app's client ID, redirect URI and desired scopes
-        const clientId = '9054847f026d48feb9d72657e4991bb0';
-        const redirectUri = 'http://127.0.0.1:8081/recommend';
-        const scopes = [
-            'streaming',
-            'user-read-private',
-            'user-modify-playback-state'
-        ];
-
-        // If there is no token, redirect to Spotify authorization
-        if (!_token) {
-            window.location = `${authEndpoint}?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scopes.join('%20')}&response_type=token&show_dialog=true`;
-        }
-
-        // Set up the Web Playback SDK
-
-        window.onSpotifyPlayerAPIReady = () => {
-            const player = new Spotify.Player({
-                name: 'Web Playback SDK Template',
-                getOAuthToken: cb => { cb(_token); }
-            });
-
-            // Error handling
-            player.on('initialization_error', e => console.error(e));
-            player.on('authentication_error', e => console.error(e));
-            player.on('account_error', e => console.error(e));
-            player.on('playback_error', e => console.error(e));
-
-            // Playback status updates
-            player.on('player_state_changed', state => {
-                console.log(state)
-                $('#current-track').attr('src', state.track_window.current_track.album.images[0].url);
-                $('#current-track-artists').text(state.track_window.current_track.artists[0].name);
-                $('#current-track-name').text(state.track_window.current_track.name);
-            });
-
-            // Ready
-            player.on('ready', data => {
-                console.log('Ready with Device ID', data.device_id);
-
-                // Play a track using our new device ID
-                play(data.device_id);
-            });
-
-            // Connect to the player!
-            player.connect();
-        }
-
-        // Play a specified track on the Web Playback SDK's device ID
-    function play(device_id) {
-        var songlist = JSON.stringify({{ songarray|safe }});
-            $.ajax({
-                url: "https://api.spotify.com/v1/me/player/play?device_id=" + device_id,
-                type: "PUT",
-                data: songlist,
-                beforeSend: function (xhr) { xhr.setRequestHeader('Authorization', 'Bearer ' + _token); },
-                success: function (data) {
-                    console.log(data)
-                }
-            });
-        }
-
-    </script>
-</head>
 <div class="container">
-    <h1>Now Playing</h1>
-    <img id="current-track" />
-    <h3 id="current-track-artists"></h3>
-    <h3 id="current-track-name"></h3>
 
-    <h1>Recommendations</h1>
-    {% for tracks in recommendrequest %}
     <div>
-        Track Name: {{ tracks.name }},
-            
-        Artist: {% for artists in recommendrequest['artists'] %}
-        {{name}},
-        {% endfor %}
-
-        Release Date: {{ tracks.album.release_date }},
-        <a href="{{tracks.external_urls.spotify }}">Open Track</a>
+        Stage Playlist:
+        <a href="{{ url_for('stagedplaylist') }}">
+            Click Here
+        </a>.
     </div>
-    {% endfor %}
+
+    <div class="mt-1">
+
+        <span><h1><img src="{{url_for('static', filename='imgs/musicIcon.png')}}" alt="Track Info" id="musicCD"> Track Info</h1></span>
+    </div>
+    
+    {{recommendinput | safe}}
+
 </div>
 {% endblock %}

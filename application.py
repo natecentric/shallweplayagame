@@ -5,7 +5,7 @@ import json
 from pandas import DataFrame 
 from flask import Flask, request, redirect, g, render_template, session
 from spotify_requests import spotify
-from azureml_requests import azureml
+from azureml_requests import playlistazureml, recommendazureml
 
 app = Flask(__name__)
 app.secret_key = 'some key for session'
@@ -171,7 +171,7 @@ def playlist():
         # get playlist features
         index = 0
         global playlist_audio_features
-        #playlist_audio_features = spotify.get_audio_feature(auth_header, ids)
+
         while index < len(ids):
             playlist_audio_features = spotify.get_audio_feature(auth_header,ids[index:index + 50])
             index += 50
@@ -193,46 +193,98 @@ def playlist():
                           'speechiness', 'valence'
                           ]
                            )
-        #alldf = pd.concat([trackdf, featuredf], axis=1, join='inner')
-        alldf = pd.merge(trackdf, featuredf, on='id')
-        alldf.to_csv('mlinput.csv', sep = ',', index = False)
-        return render_template('playlist.html',  playlist_id=playlist_id, alldata=alldf.to_html())
+        playlistinput = pd.merge(trackdf, featuredf, on='id')
+        playlistinput.to_csv('playlistinput.csv', sep = ',', index = False)
+        return render_template('playlist.html',
+                               playlist_id=playlist_id,
+                               content=content,
+                               playlistinput=playlistinput.to_html())
 
 
-@app.route('/mloutput')
-def mloutput():
-    mlbatchrequest = azureml.invokeBatchExecutionService()
-    mloutputtable = pd.read_csv('mloutput.csv', encoding = "ISO-8859-1")
-    mloutputtable.loc['avg'] = mloutputtable.mean()
-    return render_template("mloutput.html", data=mloutputtable.to_html())
+@app.route('/playlistresult')
+def playlistresult():
+    mlbatchrequest = playlistazureml.invokeBatchExecutionService()
+    playlistoutput = pd.read_csv('playlistoutput.csv', encoding = "ISO-8859-1")
+    playlistoutput.loc['avg'] = playlistoutput.mean()
+    return render_template("playlistresult.html", playlistoutput=playlistoutput.to_html())
 
 @app.route('/recommend')
 def recommend():
     if 'auth_header' in session:
         auth_header = session['auth_header']
-        songarray = {"uris":[]}
-        mloutputtable = pd.read_csv('mloutput.csv', encoding = "ISO-8859-1")
-        mloutputtable.loc['avg'] = mloutputtable.mean()
-        seedid = mloutputtable.loc[0,'id']
-        popavg = mloutputtable.loc['avg','popularity']
+        playlistoutput = pd.read_csv('playlistoutput.csv', encoding = "ISO-8859-1")
+        playlistoutput.loc['avg'] = playlistoutput.mean()
+        seedid = playlistoutput.loc[0,'id']
+        popavg = playlistoutput.loc['avg','popularity']
         targetpop = int(round(popavg))
-        targetdance = mloutputtable.loc['avg','danceability']
-        targetenergy = mloutputtable.loc['avg','energy']
+        targetdance = playlistoutput.loc['avg','danceability']
+        targetenergy = playlistoutput.loc['avg','energy']
         query_parameters = {
             "seed_tracks": seedid,
-            "limit": 10,
+            "limit": 100,
             "market": "US",
             "target_popularity": targetpop,
             "target_danceability": targetdance,
             "target_energy": targetenergy
             }
-        recommendrequest = spotify.get_recommendations(auth_header,query_parameters)
-        for i in recommendrequest['tracks']:
+        recommendtracks = spotify.get_recommendations(auth_header,query_parameters)
+        ids = []
+        track_info = []
+        for i in recommendtracks['tracks']:
             id = i['id']
-            songarray['uris'].append("spotify:track:" + id)
-        return render_template("recommend.html", recommendrequest=recommendrequest["tracks"], songarray=songarray)
+            ids.append(i['id'])
+            track_info.append([
+                i['id'],
+                i['name'],
+                i['popularity']
+                ])
+        trackdf = pd.DataFrame(track_info, columns=
+                          [
+                          'id',
+                          'name',
+                          'popularity'
+                          ]
+                           )
+        recommendfeatures = spotify.get_audio_feature(auth_header, ids)
+                # build playlist features
+        features_list = []
+        for features in recommendfeatures['audio_features']:
+            features_list.append([
+                features['id'],
+                features['acousticness'],features['danceability'],
+                features['energy'],features['liveness'],
+                features['speechiness'],features['valence']
+                ])
 
+        featuredf = pd.DataFrame(features_list, columns=
+                          [
+                          'id',
+                          'acousticness', 'danceability',
+                          'energy', 'liveness',
+                          'speechiness', 'valence'
+                          ]
+                           )
+        recommendinput = pd.merge(trackdf, featuredf, on='id')
+        recommendinput.to_csv('recommendinput.csv', sep = ',', index = False)
+        return render_template("recommend.html",
+                            recommendtracks=recommendtracks["tracks"],
+                            recommendfeatures=recommendfeatures,
+                            recommendinput=recommendinput.to_html()
+                            )
 
+@app.route('/stagedplaylist')
+def stagedplaylist():
+    if 'auth_header' in session:
+        auth_header = session['auth_header']
+        songarray = {"uris":[]}
+        mlbatchrequest = recommendazureml.invokeBatchExecutionService()
+        recommendoutput = pd.read_csv('recommendoutput.csv', encoding = "ISO-8859-1", nrows=10)
+        ids = recommendoutput['id'].values
+        songlist = ["spotify:track:" + s for s in ids]
+        songjson = json.dumps( {'uris':(songlist)})
+        return render_template("stagedplaylist.html",
+                            songjson=songjson
+                            )
 
 if __name__ == "__main__":
     
