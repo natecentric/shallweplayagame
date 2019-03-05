@@ -93,6 +93,16 @@
     <h3 id="current-track-artists"></h3>
     <h3 id="current-track-name"></h3>
 
+    <h1>Recommendations</h1>
+    {% for tracks in stagedtracks %}
+    <div>
+        Track Name: {{ tracks.name }},
 
+        Artist: 
+
+        Release Date: {{ tracks.album.release_date }},
+        <a href="{{tracks.external_urls.spotify }}">Open Track</a>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}

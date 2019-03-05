@@ -144,7 +144,7 @@ def playlist():
         ids = []
         track_info = []
         playlist_id = request.args['id']
-        # get playlist
+        # get playlist (TO DO: get artist name and genre)
         while True:
             content = spotify.get_playlist_tracks(auth_header, playlist_id)
             songs += content['items']
@@ -152,7 +152,7 @@ def playlist():
                 offset += 100
             else:
                 break
-
+        
         for i in songs:
             ids.append(i['track']['id'])
             track_info.append([
@@ -213,14 +213,16 @@ def recommend():
     if 'auth_header' in session:
         auth_header = session['auth_header']
         playlistoutput = pd.read_csv('playlistoutput.csv', encoding = "ISO-8859-1")
+        #build recommendation params ((TO DO: seed on top 5 genres, min/max of features closest to center) CURENT seed track is top 5 track ids, avg of features for target)
+        seedids = playlistoutput.loc[0,'id']
         playlistoutput.loc['avg'] = playlistoutput.mean()
-        seedid = playlistoutput.loc[0,'id']
         popavg = playlistoutput.loc['avg','popularity']
         targetpop = int(round(popavg))
         targetdance = playlistoutput.loc['avg','danceability']
         targetenergy = playlistoutput.loc['avg','energy']
+        #get spotify recommednations (TO DO dynamically build params)
         query_parameters = {
-            "seed_tracks": seedid,
+            "seed_tracks": seedids,
             "limit": 100,
             "market": "US",
             "target_popularity": targetpop,
@@ -246,7 +248,7 @@ def recommend():
                           ]
                            )
         recommendfeatures = spotify.get_audio_feature(auth_header, ids)
-                # build playlist features
+        # build recommnedation features
         features_list = []
         for features in recommendfeatures['audio_features']:
             features_list.append([
@@ -265,6 +267,7 @@ def recommend():
                           ]
                            )
         recommendinput = pd.merge(trackdf, featuredf, on='id')
+        #inputfile for recommendation ML request
         recommendinput.to_csv('recommendinput.csv', sep = ',', index = False)
         return render_template("recommend.html",
                             recommendtracks=recommendtracks["tracks"],
@@ -278,12 +281,17 @@ def stagedplaylist():
         auth_header = session['auth_header']
         songarray = {"uris":[]}
         mlbatchrequest = recommendazureml.invokeBatchExecutionService()
+        #get top10 rows from output (TO DO: selected top 25 based on distant to cluster)
         recommendoutput = pd.read_csv('recommendoutput.csv', encoding = "ISO-8859-1", nrows=10)
+        #build input for webplayback
         ids = recommendoutput['id'].values
         songlist = ["spotify:track:" + s for s in ids]
         songjson = json.dumps( {'uris':(songlist)})
+        #get track info
+        stagedtracks = spotify.get_several_tracks(auth_header, ids)
         return render_template("stagedplaylist.html",
-                            songjson=songjson
+                            songjson=songjson,
+                            stagedtracks=stagedtracks['tracks']
                             )
 
 if __name__ == "__main__":

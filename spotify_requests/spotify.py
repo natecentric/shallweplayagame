@@ -268,13 +268,13 @@ GET_TRACK_ENDPOINT = "{}/{}".format(SPOTIFY_API_URL, 'tracks')  # /<id>
 # https://developer.spotify.com/web-api/get-track/
 def get_track(track_id):
     url = "{}/{id}".format(GET_TRACK_ENDPOINT, id=track_id)
-    resp = requests.get(url)
+    resp = requests.get(url, headers=auth_header)
     return resp.json()
 
 # https://developer.spotify.com/web-api/get-several-tracks/
-def get_several_tracks(list_of_ids):
-    url = "{}/?ids={ids}".format(GET_TRACK_ENDPOINT, ids=','.join(list_of_ids))
-    resp = requests.get(url)
+def get_several_tracks(auth_header, ids=[]):
+    url = "{}/?ids={ids}".format(GET_TRACK_ENDPOINT, ids=','.join(ids))
+    resp = requests.get(url, headers=auth_header)
     return resp.json()
 
 
