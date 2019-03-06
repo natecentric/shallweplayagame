@@ -144,7 +144,7 @@ def playlist():
         ids = []
         track_info = []
         playlist_id = request.args['id']
-        # get playlist (TO DO: get artist name and genre)
+        # get playlist
         while True:
             content = spotify.get_playlist_tracks(auth_header, playlist_id)
             songs += content['items']
@@ -152,30 +152,54 @@ def playlist():
                 offset += 100
             else:
                 break
-        
-        for i in songs:
-            ids.append(i['track']['id'])
+        #flatten playlist tracks and artist info
+        genre_info = []
+        list_of_ids = []
+        for t in songs:
+            ids.append(t['track']['id'])
+            artist_id = t['track']['artists'][0]['id']
+            artist_name = t['track']['artists'][0]['name']
             track_info.append([
-                i['track']['id'],
-                i['track']['name'],
-                i['track']['popularity']
+                    t['track']['id'],
+                    t['track']['name'],
+                    t['track']['popularity'],
+                    artist_id,
+                    artist_name
+                    ])
+        for ta in songs:
+            for a in ta['track']['artists']:
+                list_of_ids.append(a['id'])
+        print (track_info)
+        #get artist genre
+        artist_json = spotify.get_several_artists(auth_header, list_of_ids)
+        for g in artist_json['artists']:
+            genre_info.append([
+                g['id'],
+                g['genres'][0]
                 ])
-
+        genredf = pd.DataFrame(genre_info, columns = 
+                               [
+                                'artist_id',
+                                'genre'
+                               ]
+                               )
         trackdf = pd.DataFrame(track_info, columns=
                           [
                           'id',
                           'name',
-                          'popularity'
+                          'popularity',
+                          'artist_id',
+                          'artist_name'
                           ]
                            )
-        # get playlist features
+        # get playlist track features
         index = 0
         global playlist_audio_features
 
         while index < len(ids):
             playlist_audio_features = spotify.get_audio_feature(auth_header,ids[index:index + 50])
             index += 50
-        # build playlist features
+        # build playlist trackfeatures
         features_list = []
         for features in playlist_audio_features['audio_features']:
             features_list.append([
@@ -193,7 +217,10 @@ def playlist():
                           'speechiness', 'valence'
                           ]
                            )
-        playlistinput = pd.merge(trackdf, featuredf, on='id')
+        #merge track featrues and genre
+        trackmerge = pd.merge(trackdf, featuredf, on='id')
+        playlistinput = pd.merge(trackmerge, genredf, on='artist_id')
+        #pust to ML input and web
         playlistinput.to_csv('playlistinput.csv', sep = ',', index = False)
         return render_template('playlist.html',
                                playlist_id=playlist_id,

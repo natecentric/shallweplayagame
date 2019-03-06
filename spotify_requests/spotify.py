@@ -125,9 +125,9 @@ def get_artist(artist_id):
 
 
 # https://developer.spotify.com/web-api/get-several-artists/
-def get_several_artists(list_of_ids):
+def get_several_artists(auth_header, list_of_ids=[]):
     url = "{}/?ids={ids}".format(GET_ARTIST_ENDPOINT, ids=','.join(list_of_ids))
-    resp = requests.get(url)
+    resp = requests.get(url, headers=auth_header)
     return resp.json()
 
 # https://developer.spotify.com/web-api/get-artists-albums/
