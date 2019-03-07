@@ -153,19 +153,22 @@ def playlist():
             else:
                 break
         
-        for i in songs:
-            ids.append(i['track']['id'])
+        for t in songs:
+            ids.append(t['track']['id'])
+            artist_name = t['track']['artists'][0]['name']
             track_info.append([
-                i['track']['id'],
-                i['track']['name'],
-                i['track']['popularity']
-                ])
+                    t['track']['id'],
+                    t['track']['name'],
+                    t['track']['popularity'],
+                    artist_name
+                    ])
 
         trackdf = pd.DataFrame(track_info, columns=
                           [
                           'id',
                           'name',
-                          'popularity'
+                          'popularity',
+                          'artist_name'
                           ]
                         )
            
@@ -222,16 +225,16 @@ def recommend():
         assignmentcounts = playlistoutput.groupby(['Assignments']).size().reset_index(name='counts')
         assignments = assignmentcounts.loc[assignmentcounts['counts'].idxmax()]
         recommndedfilter = playlistoutput[playlistoutput['Assignments'] == assignments['Assignments']]
-        recommndedfilter.loc['avg'] = recommndedfilter.mean()
-        popavg = recommndedfilter.loc['avg','popularity']
-        targetpop = int(round(popavg))
-        target_acousticness = recommndedfilter.loc['avg','acousticness']
-        target_danceability = recommndedfilter.loc['avg','danceability']
-        target_energy = recommndedfilter.loc['avg','danceability']
-        target_instrumentalness = recommndedfilter.loc['avg','instrumentalness']
-        target_liveness = recommndedfilter.loc['avg','liveness']
-        target_speechiness = recommndedfilter.loc['avg','speechiness']
-        target_valence = recommndedfilter.loc['avg','valence']
+        recommndedfilter.loc['median'] = recommndedfilter.median()
+        popmedian = recommndedfilter.loc['median','popularity']
+        targetpop = int(round(popmedian))
+        target_acousticness = recommndedfilter.loc['median','acousticness']
+        target_danceability = recommndedfilter.loc['median','danceability']
+        target_energy = recommndedfilter.loc['median','danceability']
+        target_instrumentalness = recommndedfilter.loc['median','instrumentalness']
+        target_liveness = recommndedfilter.loc['median','liveness']
+        target_speechiness = recommndedfilter.loc['median','speechiness']
+        target_valence = recommndedfilter.loc['median','valence']
 
 
         #get spotify recommednations (TO DO dynamically build params)
@@ -239,7 +242,7 @@ def recommend():
             "seed_genres": "dance,pop,country,rock,party",
             "limit": 100,
             "market": "US",
-            #"target_popularity": targetpop,
+            "target_popularity": targetpop,
             "target_acousticness": target_acousticness,
             "target_danceability": target_danceability,
             "target_energy": target_energy,
@@ -251,19 +254,30 @@ def recommend():
         recommendtracks = spotify.get_recommendations(auth_header,query_parameters)
         ids = []
         track_info = []
-        for i in recommendtracks['tracks']:
-            id = i['id']
-            ids.append(i['id'])
+        #for i in recommendtracks['tracks']:
+        #    id = i['id']
+        #    ids.append(i['id'])
+        #    track_info.append([
+        #        i['id'],
+        #        i['name'],
+        #        i['popularity']
+        #        ])
+        for t in recommendtracks['tracks']:
+            id = t['id']
+            ids.append(t['id'])
+            artist_name = t['artists'][0]['name']
             track_info.append([
-                i['id'],
-                i['name'],
-                i['popularity']
-                ])
+                    t['id'],
+                    t['name'],
+                    t['popularity'],
+                    artist_name
+                    ])
         trackdf = pd.DataFrame(track_info, columns=
                           [
                           'id',
                           'name',
-                          'popularity'
+                          'popularity',
+                          'artist_name'
                           ]
                            )
         recommendfeatures = spotify.get_audio_feature(auth_header, ids)
