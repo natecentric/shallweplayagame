@@ -303,7 +303,7 @@ def stagedplaylist():
     if 'auth_header' in session:
         auth_header = session['auth_header']
         songarray = {"uris":[]}
-        #mlbatchrequest = recommendazureml.invokeBatchExecutionService()
+        mlbatchrequest = recommendazureml.invokeBatchExecutionService()
         # selected top 49 based on distant to cluster)
         recommendoutput = pd.read_csv('recommendoutput.csv', encoding = "ISO-8859-1")
         assignmentcounts = recommendoutput.groupby(['Assignments']).size().reset_index(name='counts')
