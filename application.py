@@ -304,13 +304,12 @@ def stagedplaylist():
         auth_header = session['auth_header']
         songarray = {"uris":[]}
         #mlbatchrequest = recommendazureml.invokeBatchExecutionService()
-        #get top10 rows from output (TO DO: selected top 25 based on distant to cluster)
+        # selected top 49 based on distant to cluster)
         recommendoutput = pd.read_csv('recommendoutput.csv', encoding = "ISO-8859-1")
         assignmentcounts = recommendoutput.groupby(['Assignments']).size().reset_index(name='counts')
         assignments = assignmentcounts.loc[assignmentcounts['counts'].idxmax()]
         stagedfilter = recommendoutput[recommendoutput['Assignments'] == assignments['Assignments']]
         #build input for webplayback
-        #ids = stagedfilter['id'].values
         allids = stagedfilter['id'].values
         ids = allids[:49]
         songlist = ["spotify:track:" + s for s in ids]
