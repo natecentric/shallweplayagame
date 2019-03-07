@@ -144,7 +144,7 @@ def playlist():
         ids = []
         track_info = []
         playlist_id = request.args['id']
-        # get playlist
+        # get playlist (TO DO: get artist name and genre)
         while True:
             content = spotify.get_playlist_tracks(auth_header, playlist_id)
             songs += content['items']
@@ -152,47 +152,23 @@ def playlist():
                 offset += 100
             else:
                 break
-        #flatten playlist tracks and artist info
-        genre_info = []
-        list_of_ids = []
-        for t in songs:
-            ids.append(t['track']['id'])
-            artist_id = t['track']['artists'][0]['id']
-            artist_name = t['track']['artists'][0]['name']
+        
+        for i in songs:
+            ids.append(i['track']['id'])
             track_info.append([
-                    t['track']['id'],
-                    t['track']['name'],
-                    t['track']['popularity'],
-                    artist_id,
-                    artist_name
-                    ])
-        for ta in songs:
-            for a in ta['track']['artists']:
-                list_of_ids.append(a['id'])
-        print (track_info)
-        #get artist genre
-        artist_json = spotify.get_several_artists(auth_header, list_of_ids)
-        for g in artist_json['artists']:
-            genre_info.append([
-                g['id'],
-                g['genres'][0]
+                i['track']['id'],
+                i['track']['name'],
+                i['track']['popularity']
                 ])
-        genredf = pd.DataFrame(genre_info, columns = 
-                               [
-                                'artist_id',
-                                'genre'
-                               ]
-                               )
+
         trackdf = pd.DataFrame(track_info, columns=
                           [
                           'id',
                           'name',
-                          'popularity',
-                          'artist_id',
-                          'artist_name'
+                          'popularity'
                           ]
-                           )
-        # get playlist track features
+                        )
+           
         index = 0
         global playlist_audio_features
 
@@ -205,21 +181,24 @@ def playlist():
             features_list.append([
                 features['id'],
                 features['acousticness'],features['danceability'],
-                features['energy'],features['liveness'],
-                features['speechiness'],features['valence']
+                features['energy'],features['instrumentalness'],
+                features['liveness'],features['speechiness'],
+                features['valence'],features['loudness'],
+                features['tempo']
                 ])
 
         featuredf = pd.DataFrame(features_list, columns=
                           [
                           'id',
                           'acousticness', 'danceability',
-                          'energy', 'liveness',
-                          'speechiness', 'valence'
+                          'energy', 'instrumentalness',
+                          'liveness', 'speechiness',
+                          'valence','loudness',
+                          'tempo'
                           ]
                            )
-        #merge track featrues and genre
-        trackmerge = pd.merge(trackdf, featuredf, on='id')
-        playlistinput = pd.merge(trackmerge, genredf, on='artist_id')
+        #merge track featrues
+        playlistinput = pd.merge(trackdf, featuredf, on='id')
         #pust to ML input and web
         playlistinput.to_csv('playlistinput.csv', sep = ',', index = False)
         return render_template('playlist.html',
@@ -232,7 +211,6 @@ def playlist():
 def playlistresult():
     mlbatchrequest = playlistazureml.invokeBatchExecutionService()
     playlistoutput = pd.read_csv('playlistoutput.csv', encoding = "ISO-8859-1")
-    playlistoutput.loc['avg'] = playlistoutput.mean()
     return render_template("playlistresult.html", playlistoutput=playlistoutput.to_html())
 
 @app.route('/recommend')
@@ -240,21 +218,35 @@ def recommend():
     if 'auth_header' in session:
         auth_header = session['auth_header']
         playlistoutput = pd.read_csv('playlistoutput.csv', encoding = "ISO-8859-1")
-        #build recommendation params ((TO DO: seed on top 5 genres, min/max of features closest to center) CURENT seed track is top 5 track ids, avg of features for target)
-        seedids = playlistoutput.loc[0,'id']
-        playlistoutput.loc['avg'] = playlistoutput.mean()
-        popavg = playlistoutput.loc['avg','popularity']
+        #build recommendation params ((TO DO: seed on top 5 genres, min/max of features closest to center) CURENT seed genre is hardcoded, avg of features for target)
+        assignmentcounts = playlistoutput.groupby(['Assignments']).size().reset_index(name='counts')
+        assignments = assignmentcounts.loc[assignmentcounts['counts'].idxmax()]
+        recommndedfilter = playlistoutput[playlistoutput['Assignments'] == assignments['Assignments']]
+        recommndedfilter.loc['avg'] = recommndedfilter.mean()
+        popavg = recommndedfilter.loc['avg','popularity']
         targetpop = int(round(popavg))
-        targetdance = playlistoutput.loc['avg','danceability']
-        targetenergy = playlistoutput.loc['avg','energy']
+        target_acousticness = recommndedfilter.loc['avg','acousticness']
+        target_danceability = recommndedfilter.loc['avg','danceability']
+        target_energy = recommndedfilter.loc['avg','danceability']
+        target_instrumentalness = recommndedfilter.loc['avg','instrumentalness']
+        target_liveness = recommndedfilter.loc['avg','liveness']
+        target_speechiness = recommndedfilter.loc['avg','speechiness']
+        target_valence = recommndedfilter.loc['avg','valence']
+
+
         #get spotify recommednations (TO DO dynamically build params)
         query_parameters = {
-            "seed_tracks": seedids,
+            "seed_genres": "dance,pop,country,rock,party",
             "limit": 100,
             "market": "US",
-            "target_popularity": targetpop,
-            "target_danceability": targetdance,
-            "target_energy": targetenergy
+            #"target_popularity": targetpop,
+            "target_acousticness": target_acousticness,
+            "target_danceability": target_danceability,
+            "target_energy": target_energy,
+            "target_instrumentalness":target_instrumentalness,
+            "target_liveness":target_liveness,
+            "target_speechiness":target_speechiness,
+            "target_valence":target_valence
             }
         recommendtracks = spotify.get_recommendations(auth_header,query_parameters)
         ids = []
@@ -281,16 +273,20 @@ def recommend():
             features_list.append([
                 features['id'],
                 features['acousticness'],features['danceability'],
-                features['energy'],features['liveness'],
-                features['speechiness'],features['valence']
+                features['energy'],features['instrumentalness'],
+                features['liveness'],features['speechiness'],
+                features['valence'],features['loudness'],
+                features['tempo']
                 ])
 
         featuredf = pd.DataFrame(features_list, columns=
                           [
                           'id',
                           'acousticness', 'danceability',
-                          'energy', 'liveness',
-                          'speechiness', 'valence'
+                          'energy', 'instrumentalness',
+                          'liveness', 'speechiness',
+                          'valence','loudness',
+                          'tempo'
                           ]
                            )
         recommendinput = pd.merge(trackdf, featuredf, on='id')
@@ -307,11 +303,16 @@ def stagedplaylist():
     if 'auth_header' in session:
         auth_header = session['auth_header']
         songarray = {"uris":[]}
-        mlbatchrequest = recommendazureml.invokeBatchExecutionService()
+        #mlbatchrequest = recommendazureml.invokeBatchExecutionService()
         #get top10 rows from output (TO DO: selected top 25 based on distant to cluster)
-        recommendoutput = pd.read_csv('recommendoutput.csv', encoding = "ISO-8859-1", nrows=10)
+        recommendoutput = pd.read_csv('recommendoutput.csv', encoding = "ISO-8859-1")
+        assignmentcounts = recommendoutput.groupby(['Assignments']).size().reset_index(name='counts')
+        assignments = assignmentcounts.loc[assignmentcounts['counts'].idxmax()]
+        stagedfilter = recommendoutput[recommendoutput['Assignments'] == assignments['Assignments']]
         #build input for webplayback
-        ids = recommendoutput['id'].values
+        #ids = stagedfilter['id'].values
+        allids = stagedfilter['id'].values
+        ids = allids[:49]
         songlist = ["spotify:track:" + s for s in ids]
         songjson = json.dumps( {'uris':(songlist)})
         #get track info
