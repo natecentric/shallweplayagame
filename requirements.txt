@@ -25,5 +25,5 @@ azure-common==1.1.18
 azure-storage-blob==1.5.0
 azure-storage-common==1.4.0
 cffi==1.12.2
-cryptography==2.5
+cryptography==3.2
 pycparser==2.19
